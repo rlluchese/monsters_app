@@ -1,36 +1,50 @@
-import logo from './logo.svg';
 import './App.css';
 import { Component } from 'react';
+import CardList from './components/card-list/card-list-component';
+import SearchBox from './components/search-box/search-box.component';
 
 class App extends Component {
   constructor() {
     super();
 
     this.state = {
-      name: "Rafa"
+      monsters: [],
+      searchTerm: ''
     };
   }
 
+  componentDidMount() {
+    fetch('https://jsonplaceholder.typicode.com/users')
+      .then((response) => {
+        return response.json();
+      })
+      .then((users) => this.setState(() => {
+        return { monsters: users }
+      }),
+      () => {
+        console.log('Did mount');
+      });
+  }
+
+  onSearchChange = (event) => {
+    this.setState(() => {
+      return { searchTerm: event.target.value.toLocaleLowerCase() }
+    });
+  };
+
   render() {
+    const { monsters, searchTerm } = this.state;
+    const { onSearchChange } = this;
+
+    const filteredMonsters = monsters.filter((monster) => {
+      return monster.name.toLocaleLowerCase().includes(searchTerm);
+    });
+
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Hi { this.state.name }
-          </p>
-          <button onClick={ () => {
-              this.setState(() => {
-                return { name: "Paula" };
-              },
-              // Callback, only runs after the state has been updated
-              () => {
-                console.log(this.state);
-              })
-          } }>
-            Change name
-          </button>
-        </header>
+      <div>
+        <h1 className='app-title'>Monsters App</h1>
+        <SearchBox onChangeHandler={onSearchChange} placeholder='search monsters'/>
+        <CardList monsters={filteredMonsters} />
       </div>
     );
   }
